@@ -1,4 +1,4 @@
-function [ output_args ] = audioFeatureExtraction( y, blockSize, hopSize )
+function [ output_args ] = audioFeatureExtraction( y, Fs, blockSize, hopSize )
 
 %********************************************
 % Computational Music Analysis
@@ -14,19 +14,16 @@ function [ output_args ] = audioFeatureExtraction( y, blockSize, hopSize )
 % a) Implement 5 audio features with a 2048 block size and 1024 hop size
 %-----------------------------------------------------------------------
 
-% Read audio files from particular genre
 nSamples = length(y);
 nBlocks = floor(nSamples/hopSize);
 
 
 % STFT of signal
-stftCoefs = shortTermFT(y,blockSize,hopSize,0);
-%nBands = length(stftCoefs); % Should this be nBands = (length(stftCoefs)/2)?
-nBands = length(stftCoefs)/2;
-
+stftCoefs = shortTermFT(y,Fs,blockSize,hopSize,0);
+nBands = length(stftCoefs);
  
 
- %*** 5 Audio Features ***%
+%*** 5 Audio Features ***%
 
 % i) Spectral Centroid
 spCentroid = zeros(nBlocks,1);
@@ -39,6 +36,7 @@ for n=1:nBlocks
         numr = numr + numrTemp;
         denr = denr + square;
     end
+    % Checking for NaNs
     if denr==0
         spCentroid(n) = 0;
     else
@@ -75,9 +73,10 @@ end
 
 % iv) Spectral Crest Factor
 spCrest = zeros(nBlocks,1);
-for n=1:nBlocks   % Removing last two blocks because STFT is returning 0
+for n=1:nBlocks
     numr = max(abs(stftCoefs(:,n)));
     denr = sum(abs(stftCoefs(:,n)));
+    % Checking for NaNs
     if denr==0
         spCrest(n) = 0;
     else
@@ -99,6 +98,7 @@ for n=2:nBlocks
     spFlux(n) = (2*sqrt(tempSum))/blockSize;
 end
     
+
 
 % Computing mean and standard deviation of each audio feature
 meanSpCentroid = mean(spCentroid);

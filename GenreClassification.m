@@ -7,110 +7,144 @@
 
 clear all;
 clc;
+tic
 
-% Assigning varibles
+%--- Assigning varibles ---%
 blockSize = 2048;
 hopSize = 1024;
 
 genres = {'classical' 'hiphop' 'country' 'jazz' 'metal'};
 
-num_genres = size(genres, 2);
-noFiles = zeros(num_genres,1);
-%au_files = zeros(num_genres,1);
-for i = 1 : num_genres
-   
+
+%--- Audio Features Indices ---%
+meanSpCentroid      = 1;
+meanMaxEnv          = 2;
+meanZcr             = 3;
+meanSpCrest         = 4;
+meanSpFlux          = 5;
+stdSpCentroid       = 6;
+stdMaxEnv           = 7;
+stdZcr              = 8;
+stdSpCrest          = 9;
+stdSpFlux           = 10;
+
+noAudioFeatures = 10;
+
+
+%--- Calculate Number of genres and Number of Audio Files in each genre ---%
+noGenres = size(genres, 2);
+noFiles = zeros(noGenres,1);
+
+for i = 1 : noGenres
    genre = cell2mat(genres(i));
-   
    path = sprintf('./genres/%s/', genre);
    
    au_files{i} = dir(fullfile(path, '*.au'));
    noFiles(i) = size(au_files{i},1);
 end
 
-tempMatrix = zeros(num_genres,max(noFiles),10);
-normalMatrix = zeros(num_genres,max(noFiles),10);
 
-for i=1:num_genres
+
+
+%--- Extract Audio Features and Normalize Results ---%
+
+% Initialize output matrices
+tempMatrix = zeros(noGenres,max(noFiles),noAudioFeatures);
+normalMatrix = zeros(noGenres,max(noFiles),noAudioFeatures);
+
+% Iterate through the genres
+for i=1:noGenres
+    
     genre = cell2mat(genres(i));
     path = sprintf('./genres/%s/', genre);
-   
-    for j = 1 : noFiles(i)
-       au = auread(strcat(path, au_files{i}(j).name));
-       tempMatrix(i,j,:) = audioFeatureExtraction( au, blockSize, hopSize );
+    disp(sprintf('Extracting Features for Genre: %s',genre));
+    
+    % Iterate through files in each genre
+    for j = 1:noFiles(i)
+        % Read Audio File
+        [au,Fs] = auread(strcat(path, au_files{i}(j).name));
+        disp(sprintf('Extracting Features for Audio File: %s',au_files{i}(j).name));
+        
+        % Extract audio features
+        tempMatrix(i,j,:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
     end
     
     
-    meanVector = zeros(1,10);
-    stdVector = zeros(1,10);
+    % Initialize mean and standard deviation vectors
+    meanVector = zeros(1,noAudioFeatures);
+    stdVector = zeros(1,noAudioFeatures);
    
-   for k = 1:10
-       normDistVector = boxcox(tempMatrix(i,:,k)');
-       meanVector(k) = mean(normDistVector);
-       stdVector(k) = std(normDistVector);
-  
-       normalMatrix(i,:,k) = (tempMatrix(i,:,k) - meanVector(k)) / stdVector(k);
-   end
+    disp(sprintf('Normalizing Results'));
+    % Iterate through each audio feature
+    for k = 1:noAudioFeatures
+        % Fit to Normal Distribution using BoxCox Transform
+        normDistVector = boxcox(tempMatrix(i,:,k)');
+        % Compute Mean and Standard Deviation
+        meanVector(k) = mean(normDistVector);
+        stdVector(k) = std(normDistVector);
+        
+        % Normalize Feature Vector
+        normalMatrix(i,:,k) = (tempMatrix(i,:,k) - meanVector(k)) / stdVector(k);
+    end
    
 end
 
+disp(sprintf('Execution Time for Feature Extraction and Normalization: %f seconds',toc));
 
 
-%-- Scatter Plots --%
-   
+
+%--- Scatter Plots ---%
+
+disp(sprintf('Making Scatter Plots'));
+
+colorVector = {'b' 'r' 'g' 'c' 'y'};
+markerArea = 10;
+
 %i) Spectral Centroid Mean vs Spectral Crest Factor Mean
 figure(1);
 title('Spectral Centroid Mean vs Spectral Crest Factor Mean');
 hold on
-scatter(normalMatrix(1,:,1),normalMatrix(1,:,4),10);
-scatter(normalMatrix(2,:,1),normalMatrix(2,:,4),10,'r');
-scatter(normalMatrix(3,:,1),normalMatrix(3,:,4),10,'g');
-scatter(normalMatrix(4,:,1),normalMatrix(4,:,4),10,'c');
-scatter(normalMatrix(5,:,1),normalMatrix(5,:,4),10,'y');
+for i=1:noGenres
+    scatter(normalMatrix(i,:,meanSpCentroid),normalMatrix(i,:,meanSpCrest),markerArea,colorVector{i});
+end
 
 
 %ii) Spectral Flux Mean vs Zero Crossing Rate Mean
 figure(2);
 title('Spectral Flux Mean vs Zero Crossing Rate Mean');
 hold on
-scatter(normalMatrix(1,:,5),normalMatrix(1,:,3),10);
-scatter(normalMatrix(2,:,5),normalMatrix(2,:,3),10,'r');
-scatter(normalMatrix(3,:,5),normalMatrix(3,:,3),10,'g');
-scatter(normalMatrix(4,:,5),normalMatrix(4,:,3),10,'c');
-scatter(normalMatrix(5,:,5),normalMatrix(5,:,3),10,'y');
+for i=1:noGenres
+    scatter(normalMatrix(i,:,meanSpFlux),normalMatrix(i,:,meanZcr),markerArea,colorVector{i});
+end
 
 
 %iii) Max Envelope Mean vs Max Envelope Standard Deviation
 figure(3);
 title('Max Envelope Mean vs Max Envelope Standard Deviation');
 hold on
-scatter(normalMatrix(1,:,2),normalMatrix(1,:,7),10);
-scatter(normalMatrix(2,:,2),normalMatrix(2,:,7),10,'r');
-scatter(normalMatrix(3,:,2),normalMatrix(3,:,7),10,'g');
-scatter(normalMatrix(4,:,2),normalMatrix(4,:,7),10,'c');
-scatter(normalMatrix(5,:,2),normalMatrix(5,:,7),10,'y');
+for i=1:noGenres
+    scatter(normalMatrix(i,:,meanMaxEnv),normalMatrix(i,:,stdMaxEnv),markerArea,colorVector{i});
+end
 
 
 %iv) Zero Crossing Rate Standard Deviation vs Spectral Crest Factor Standard Deviation
 figure(4);
 title('Zero Crossing Rate Standard Deviation vs Spectral Crest Factor Standard Deviation');
 hold on
-scatter(normalMatrix(1,:,8),normalMatrix(1,:,9),10);
-scatter(normalMatrix(2,:,8),normalMatrix(2,:,9),10,'r');
-scatter(normalMatrix(3,:,8),normalMatrix(3,:,9),10,'g');
-scatter(normalMatrix(4,:,8),normalMatrix(4,:,9),10,'c');
-scatter(normalMatrix(5,:,8),normalMatrix(5,:,9),10,'y');
+for i=1:noGenres
+    scatter(normalMatrix(i,:,stdZcr),normalMatrix(i,:,stdSpCrest),markerArea,colorVector{i});
+end
+
 
 
 %v) Spectral Centroid Standard Deviation vs Spectral Flux Standard Deviation
 figure(5);
 title('Spectral Centroid Standard Deviation vs Spectral Flux Standard Deviation');
 hold on
-scatter(normalMatrix(1,:,6),normalMatrix(1,:,10),10);
-scatter(normalMatrix(2,:,6),normalMatrix(2,:,10),10,'r');
-scatter(normalMatrix(3,:,6),normalMatrix(3,:,10),10,'g');
-scatter(normalMatrix(4,:,6),normalMatrix(4,:,10),10,'c');
-scatter(normalMatrix(5,:,6),normalMatrix(5,:,10),10,'y');
+for i=1:noGenres
+    scatter(normalMatrix(i,:,stdSpCentroid),normalMatrix(i,:,stdSpFlux),markerArea,colorVector{i});
+end
 
-
+disp(sprintf('Total Execuation Time: %f seconds',toc));
 
 

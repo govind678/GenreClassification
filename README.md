@@ -1,4 +1,7 @@
-Genre Classification
+Computational Music Analysis
+GaTech - MUSI 6201
 
-Iman Mukherjee
+Genre Classification Assignment
+
+Iman Mukherjee,
 Govinda Ram Pingali
