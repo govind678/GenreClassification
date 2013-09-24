@@ -15,7 +15,6 @@ hopSize = 1024;
 
 genres = {'classical' 'hiphop' 'country' 'jazz' 'metal'};
 
-
 %--- Audio Features Indices ---%
 meanSpCentroid      = 1;
 meanMaxEnv          = 2;
@@ -30,10 +29,10 @@ stdSpFlux           = 10;
 
 noAudioFeatures = 10;
 
-
 %--- Calculate Number of genres and Number of Audio Files in each genre ---%
 noGenres = size(genres, 2);
 noFiles = zeros(noGenres,1);
+totalFiles = 0;
 
 for i = 1 : noGenres
    genre = cell2mat(genres(i));
@@ -41,19 +40,16 @@ for i = 1 : noGenres
    
    au_files{i} = dir(fullfile(path, '*.au'));
    noFiles(i) = size(au_files{i},1);
+   totalFiles = totalFiles + noFiles(i);
 end
-
-
-
 
 %--- Extract Audio Features and Normalize Results ---%
 
 % Initialize output matrices
-tempMatrix = zeros(noGenres,max(noFiles),noAudioFeatures);
-normalMatrix = zeros(noGenres,max(noFiles),noAudioFeatures);
+tempMatrix = zeros(totalFiles,noAudioFeatures);
+normalMatrix = zeros(totalFiles,noAudioFeatures);
 
-% Iterate through the genres
-for i=1:noGenres
+for i = 1 : noGenres
     
     genre = cell2mat(genres(i));
     path = sprintf('./genres/%s/', genre);
@@ -66,27 +62,29 @@ for i=1:noGenres
         disp(sprintf('Extracting Features for Audio File: %s',au_files{i}(j).name));
         
         % Extract audio features
-        tempMatrix(i,j,:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
-    end
-    
-    
-    % Initialize mean and standard deviation vectors
-    meanVector = zeros(1,noAudioFeatures);
-    stdVector = zeros(1,noAudioFeatures);
-   
-    disp(sprintf('Normalizing Results'));
-    % Iterate through each audio feature
-    for k = 1:noAudioFeatures
-        % Fit to Normal Distribution using BoxCox Transform
-        normDistVector = boxcox(tempMatrix(i,:,k)');
-        % Compute Mean and Standard Deviation
-        meanVector(k) = mean(normDistVector);
-        stdVector(k) = std(normDistVector);
+        if i==1
+            tempMatrix(j,:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
+        else
+            tempMatrix(j+(i-1)*noFiles(i-1),:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
+        end
         
-        % Normalize Feature Vector
-        normalMatrix(i,:,k) = (tempMatrix(i,:,k) - meanVector(k)) / stdVector(k);
-    end
-   
+    end 
+end
+
+% Initialize mean and standard deviation vectors
+meanVector = zeros(1,noAudioFeatures);
+stdVector = zeros(1,noAudioFeatures);
+
+disp(sprintf('Normalizing Results'));
+% Iterate through each audio feature
+for k = 1:noAudioFeatures
+    % Fit to Normal Distribution using BoxCox Transform
+    [normDistVector, lambda(k)] = boxcox(tempMatrix(:,k));
+    % Compute Mean and Standard Deviation
+    meanVector(k) = mean(normDistVector);
+    stdVector(k) = std(normDistVector);
+    % Normalize Feature Vector
+    normalMatrix(:,k) = (tempMatrix(:,k) - meanVector(k)) / stdVector(k);
 end
 
 disp(sprintf('Execution Time for Feature Extraction and Normalization: %f seconds',toc));
@@ -105,7 +103,11 @@ figure(1);
 title('Spectral Centroid Mean vs Spectral Crest Factor Mean');
 hold on
 for i=1:noGenres
-    scatter(normalMatrix(i,:,meanSpCentroid),normalMatrix(i,:,meanSpCrest),markerArea,colorVector{i});
+    if i==1
+        scatter(normalMatrix(i:noFiles(i),meanSpCentroid),normalMatrix(i:noFiles(i),meanSpCrest),markerArea,colorVector{i});
+    else
+        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpCentroid),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpCrest),markerArea,colorVector{i});
+    end
 end
 
 
@@ -114,7 +116,11 @@ figure(2);
 title('Spectral Flux Mean vs Zero Crossing Rate Mean');
 hold on
 for i=1:noGenres
-    scatter(normalMatrix(i,:,meanSpFlux),normalMatrix(i,:,meanZcr),markerArea,colorVector{i});
+    if i==1
+        scatter(normalMatrix(i:noFiles(i),meanSpFlux),normalMatrix(i:noFiles(i),meanZcr),markerArea,colorVector{i});
+    else
+        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpFlux),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanZcr),markerArea,colorVector{i});
+    end
 end
 
 
@@ -123,7 +129,11 @@ figure(3);
 title('Max Envelope Mean vs Max Envelope Standard Deviation');
 hold on
 for i=1:noGenres
-    scatter(normalMatrix(i,:,meanMaxEnv),normalMatrix(i,:,stdMaxEnv),markerArea,colorVector{i});
+    if i==1
+        scatter(normalMatrix(i:noFiles(i),meanMaxEnv),normalMatrix(i:noFiles(i),stdMaxEnv),markerArea,colorVector{i});
+    else
+        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanMaxEnv),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdMaxEnv),markerArea,colorVector{i});
+    end
 end
 
 
@@ -132,7 +142,11 @@ figure(4);
 title('Zero Crossing Rate Standard Deviation vs Spectral Crest Factor Standard Deviation');
 hold on
 for i=1:noGenres
-    scatter(normalMatrix(i,:,stdZcr),normalMatrix(i,:,stdSpCrest),markerArea,colorVector{i});
+    if i==1
+        scatter(normalMatrix(i:noFiles(i),stdZcr),normalMatrix(i:noFiles(i),stdSpCrest),markerArea,colorVector{i});
+    else
+        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdZcr),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpCrest),markerArea,colorVector{i});
+    end
 end
 
 
@@ -142,9 +156,11 @@ figure(5);
 title('Spectral Centroid Standard Deviation vs Spectral Flux Standard Deviation');
 hold on
 for i=1:noGenres
-    scatter(normalMatrix(i,:,stdSpCentroid),normalMatrix(i,:,stdSpFlux),markerArea,colorVector{i});
+    if i==1
+        scatter(normalMatrix(i:noFiles(i),stdSpCentroid),normalMatrix(i:noFiles(i),stdSpFlux),markerArea,colorVector{i});
+    else
+        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpCentroid),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpFlux),markerArea,colorVector{i});
+    end
 end
 
 disp(sprintf('Total Execuation Time: %f seconds',toc));
-
-
