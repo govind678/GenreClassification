@@ -12,6 +12,7 @@ tic
 %--- Assigning varibles ---%
 blockSize = 2048;
 hopSize = 1024;
+scatterPlot = 0;
 
 genres = {'classical' 'hiphop' 'country' 'jazz' 'metal'};
 
@@ -72,8 +73,8 @@ for i = 1 : noGenres
 end
 
 % Initialize mean and standard deviation vectors
-meanVector = zeros(1,noAudioFeatures);
-stdVector = zeros(1,noAudioFeatures);
+%meanVector = zeros(1,noAudioFeatures);
+%stdVector = zeros(1,noAudioFeatures);
 
 disp(sprintf('Normalizing Results'));
 % Iterate through each audio feature
@@ -81,10 +82,10 @@ for k = 1:noAudioFeatures
     % Fit to Normal Distribution using BoxCox Transform
     [normDistVector, lambda(k)] = boxcox(tempMatrix(:,k));
     % Compute Mean and Standard Deviation
-    meanVector(k) = mean(normDistVector);
-    stdVector(k) = std(normDistVector);
+    meanVector = mean(normDistVector);
+    stdVector = std(normDistVector);
     % Normalize Feature Vector
-    normalMatrix(:,k) = (tempMatrix(:,k) - meanVector(k)) / stdVector(k);
+    normalMatrix(:,k) = (normDistVector - meanVector) / stdVector;
 end
 
 disp(sprintf('Execution Time for Feature Extraction and Normalization: %f seconds',toc));
@@ -93,6 +94,9 @@ disp(sprintf('Execution Time for Feature Extraction and Normalization: %f second
 
 %--- Scatter Plots ---%
 
+if scatterPlot == 1
+    
+    
 disp(sprintf('Making Scatter Plots'));
 
 colorVector = {'b' 'r' 'g' 'c' 'y'};
@@ -163,8 +167,10 @@ for i=1:noGenres
     end
 end
 
+end
+
 disp(sprintf('Total Execuation Time: %f seconds',toc));
 
 finalMatrix = reshape(normalMatrix, max(noFiles), noAudioFeatures, noGenres);
 
-save('Results/PostScatter.mat');
+save('audioFeatures.mat');
