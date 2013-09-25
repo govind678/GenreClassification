@@ -1,9 +1,23 @@
+clear;
+clc;
+
 load 'Results/PostScatter';
 
-testGenre = 4;
-testSong = 51;
-k = 5;
+count = 0;
 
-class = knnClassifier(normalMatrix, normalMatrix(testGenre,testSong,:),k);
+for i = 1 : noGenres
+    for j = 1 : noFiles(i)
+        
+        testGenre = i;
+        testSong = j;
+        class = knnClassifier(finalMatrix, finalMatrix(testSong,:,testGenre),5);
+        disp(sprintf('Output Class is: %d',class));
+        
+        if class == i;
+            count = count + 1;
+        end
+        
+    end
+end
 
-disp(sprintf('Genre of test song is: %d',class));
+disp(sprintf('Percentage correct is: %f %',100*count/sum(noFiles(1:noGenres))));

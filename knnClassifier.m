@@ -1,8 +1,8 @@
 function [ output_args ] = knnClassifier( T,I,K )
 
-noClasses = size(T,1);
-noObservations = size(T,2);
-%noFeatures = size(T,3);
+noObservations = size(T,1);
+%noFeatures = size(T,2);
+noClasses = size(T,3);
 
 classes = zeros(K,1);
 minDist = zeros(K,1);
@@ -11,7 +11,7 @@ dist_Index = 1;
 
 for i = 1:noClasses
     for j=1:noObservations
-        tempDistance = sqrt(sum((squeeze(T(i,j,:))-I(:)).^2));
+        tempDistance = sqrt(sum((T(j,:,i)'-I(:)).^2));
         
         if dist_Index <= K
             minDist(dist_Index) = tempDistance;           

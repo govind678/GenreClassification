@@ -65,7 +65,7 @@ for i = 1 : noGenres
         if i==1
             tempMatrix(j,:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
         else
-            tempMatrix(j+(i-1)*noFiles(i-1),:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
+            tempMatrix(j + sum(noFiles(1 : i-1)),:) = audioFeatureExtraction(au,Fs,blockSize,hopSize);
         end
         
     end 
@@ -106,7 +106,7 @@ for i=1:noGenres
     if i==1
         scatter(normalMatrix(i:noFiles(i),meanSpCentroid),normalMatrix(i:noFiles(i),meanSpCrest),markerArea,colorVector{i});
     else
-        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpCentroid),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpCrest),markerArea,colorVector{i});
+        scatter(normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),meanSpCentroid),normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),meanSpCrest),markerArea,colorVector{i});
     end
 end
 
@@ -119,7 +119,7 @@ for i=1:noGenres
     if i==1
         scatter(normalMatrix(i:noFiles(i),meanSpFlux),normalMatrix(i:noFiles(i),meanZcr),markerArea,colorVector{i});
     else
-        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanSpFlux),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanZcr),markerArea,colorVector{i});
+        scatter(normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),meanSpFlux),normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),meanZcr),markerArea,colorVector{i});
     end
 end
 
@@ -132,7 +132,7 @@ for i=1:noGenres
     if i==1
         scatter(normalMatrix(i:noFiles(i),meanMaxEnv),normalMatrix(i:noFiles(i),stdMaxEnv),markerArea,colorVector{i});
     else
-        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),meanMaxEnv),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdMaxEnv),markerArea,colorVector{i});
+        scatter(normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),meanMaxEnv),normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),stdMaxEnv),markerArea,colorVector{i});
     end
 end
 
@@ -145,7 +145,7 @@ for i=1:noGenres
     if i==1
         scatter(normalMatrix(i:noFiles(i),stdZcr),normalMatrix(i:noFiles(i),stdSpCrest),markerArea,colorVector{i});
     else
-        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdZcr),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpCrest),markerArea,colorVector{i});
+        scatter(normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),stdZcr),normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),stdSpCrest),markerArea,colorVector{i});
     end
 end
 
@@ -159,8 +159,12 @@ for i=1:noGenres
     if i==1
         scatter(normalMatrix(i:noFiles(i),stdSpCentroid),normalMatrix(i:noFiles(i),stdSpFlux),markerArea,colorVector{i});
     else
-        scatter(normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpCentroid),normalMatrix((i-1)*noFiles(i-1):i*noFiles(i),stdSpFlux),markerArea,colorVector{i});
+        scatter(normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),stdSpCentroid),normalMatrix(sum(noFiles(1 : i-1)) + 1 : sum(noFiles(1 : i)),stdSpFlux),markerArea,colorVector{i});
     end
 end
 
 disp(sprintf('Total Execuation Time: %f seconds',toc));
+
+finalMatrix = reshape(normalMatrix, max(noFiles), noAudioFeatures, noGenres);
+
+save('Results/PostScatter.mat');
