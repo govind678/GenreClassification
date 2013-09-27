@@ -30,6 +30,8 @@ stdSpFlux           = 10;
 
 noAudioFeatures = 10;
 
+
+
 %--- Calculate Number of genres and Number of Audio Files in each genre ---%
 noGenres = size(genres, 2);
 noFiles = zeros(noGenres,1);
@@ -43,6 +45,9 @@ for i = 1 : noGenres
    noFiles(i) = size(au_files{i},1);
    totalFiles = totalFiles + noFiles(i);
 end
+
+
+
 
 %--- Extract Audio Features and Normalize Results ---%
 
@@ -71,6 +76,8 @@ for i = 1 : noGenres
         
     end 
 end
+
+
 
 % Initialize mean and standard deviation vectors
 %meanVector = zeros(1,noAudioFeatures);
