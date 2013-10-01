@@ -32,9 +32,13 @@ end
 %--- KNN Classifier ---%
 classMatrix = zeros(noTestVectors,noGenres);
 
+confusionMatrix = zeros(noGenres, noGenres);
+
 for i=1:noTestVectors
     for k=1:noGenres
         classMatrix(i,k) = knnClassifier(trainingMatrix(:,1:featureLength,:),testingMatrix(i,1:featureLength,k),K);
+        
+        confusionMatrix(classMatrix(i,k), k) = confusionMatrix(classMatrix(i,k), k) + 1;
     end
 end
 
@@ -44,7 +48,7 @@ for j=1:noGenres
     sumCorrectClass = sumCorrectClass + length(find(classMatrix(:,j)==j));
 end
 
-output_args = (sumCorrectClass*100)/(noGenres*noTestVectors);
-
+output_args{1} = (sumCorrectClass*100)/(noGenres*noTestVectors);
+output_args{2} = confusionMatrix;
 
 end
