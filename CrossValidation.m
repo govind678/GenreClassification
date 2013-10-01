@@ -23,11 +23,11 @@ stdSpFlux           = 10;
 nFold = 10;
 K = 1;
 
-accuracyMatrix = zeros((100/nFold),noAudioFeatures);
+accuracyMatrix = zeros(nFold,noAudioFeatures);
 
 for z=1:nFold
     for n=1:noAudioFeatures
-        accuracyMatrix(z,n) = nFoldCrossValidation(finalMatrix(:,n,:), z, nFold, K); 
+        accuracyMatrix(z,n) = nFoldCrossValidation(finalMatrix(:,n,:), z, nFold, K);
     end
 end
 

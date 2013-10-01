@@ -12,7 +12,7 @@ tic
 %--- Assigning varibles ---%
 blockSize = 2048;
 hopSize = 1024;
-scatterPlot = 0;
+scatterPlot = 1;
 
 genres = {'classical' 'hiphop' 'country' 'jazz' 'metal'};
 

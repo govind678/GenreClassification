@@ -12,10 +12,10 @@ dist_Index = 1;
 
 for i = 1:noClasses
     for j=1:noObservations
-        tempDistance = sqrt(sum(trainMatrix(j,:,i)-testVector(:)').^2);
+        tempDistance = sqrt(sum((trainMatrix(j,:,i)-testVector(:)').^2));
 
         if dist_Index <= K
-            minDist(dist_Index) = tempDistance;           
+            minDist(dist_Index) = tempDistance;
             classes(dist_Index) = i;
             dist_Index = dist_Index + 1;
         elseif tempDistance < max(minDist)
