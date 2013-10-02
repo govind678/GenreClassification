@@ -34,12 +34,14 @@ ultimateAccuracy = zeros(length(nFold),length(KFinal));
 
 for k=1:length(KFinal)
     disp(sprintf('Running nFoldCrossValidation of KNN Classifier for k = %d',KFinal(k)));
+    nFoldAccuracy = zeros(nFold,1);
     for z=1:nFold
         disp(sprintf('KNN Classfier for fold: %d,',z));
         temp = nFoldCrossValidation(sortedMatrix(:,1:finalFeatureLength,:), z, nFold, KFinal(k));
-        ultimateAccuracy(z,k) = temp{1};
+        nFoldAccuracy = temp{1};
         confusionMatrix(:,:,k) = confusionMatrix(:,:,k) + temp{2};
     end
+    ultimateAccuracy(k) = mean(nFoldAccuracy);
 end
 
 disp(sprintf('Execution Time for creating Confusion Matrices: %f seconds',toc));
