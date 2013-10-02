@@ -1,9 +1,10 @@
-%********************************************
+%***********************************************************
 % Computational Music Analysis
 % Assignment 2 - Genre Classification
 %
+% 
 % Imankalyan Mukherjee, Govinda Ram Pingali
-%********************************************
+%***********************************************************
 
 clear all;
 clc;
@@ -12,7 +13,7 @@ tic
 %--- Assigning varibles ---%
 blockSize = 2048;
 hopSize = 1024;
-scatterPlot = 1;
+scatterPlot = 1;    % Toggle Scatter Plots
 
 genres = {'classical' 'hiphop' 'country' 'jazz' 'metal'};
 

@@ -1,5 +1,13 @@
 function [ output_args ] = knnClassifier( trainMatrix, testVector, K )
 
+%************************************************************
+% Computational Music Analysis
+% Assignment 2 - Genre Classification
+%
+% Generic kNN Classifier
+%
+% Imankalyan Mukherjee, Govinda Ram Pingali
+%************************************************************
 
 noObservations = size(trainMatrix,1);
 noClasses = size(trainMatrix,3);
@@ -10,10 +18,14 @@ minDist = 100*ones(K,1);
 
 dist_Index = 1;
 
+% Iterating through all classes and all observations
 for i = 1:noClasses
     for j=1:noObservations
+        % Computing Euclidean Distance
         tempDistance = sqrt(sum((trainMatrix(j,:,i)-testVector(:)').^2));
-
+        
+        % Storing the least K distance values and swapping if any lower
+        % value is found
         if dist_Index <= K
             minDist(dist_Index) = tempDistance;
             classes(dist_Index) = i;

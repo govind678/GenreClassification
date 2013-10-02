@@ -4,7 +4,7 @@ function [ output_args ] = audioFeatureExtraction( y, Fs, blockSize, hopSize )
 % Computational Music Analysis
 % Assignment 2 - Genre Classification
 %
-% Audio Feature Extraction function
+% Audio Feature Extraction Function
 %
 % Imankalyan Mukherjee, Govinda Ram Pingali
 %********************************************

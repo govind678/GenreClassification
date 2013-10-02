@@ -1,10 +1,25 @@
 function [ output_args ] = nFoldCrossValidation( dataset, z, nFold, K )
 
+%************************************************************
+% Computational Music Analysis
+% Assignment 2 - Genre Classification
+%
+% Generic nFold Cross Validation Function for KNN Classifier
+%
+% Imankalyan Mukherjee, Govinda Ram Pingali
+%************************************************************
+
+
+%--- Computing Required Variables ---%
 noFiles = size(dataset,1);
 featureLength = size(dataset,2);
 noGenres = size(dataset,3);
 
 
+
+%--- Create Testing and Training Datasets from Exisiting Dataset ---%
+
+% Initializing Train and Test Matrices
 trainingMatrix = zeros(((100-nFold)/100)*noFiles,featureLength,noGenres);
 testingMatrix = zeros((nFold/100)*noFiles,featureLength,noGenres);
 
@@ -13,7 +28,7 @@ noTestVectors = size(testingMatrix,1);
 trainIndex = 1;
 testIndex = 1;
 
-%--- Create Testing and Training Datasets from Exisiting Dataset ---%
+
 for i=1:noGenres
     for n=1:noFiles
         if mod(n,nFold) == z-1
@@ -29,7 +44,8 @@ for i=1:noGenres
 end
 
 
-%--- KNN Classifier ---%
+
+%--- Creating Class and Confusion Matrices from kNN Classifier ---%
 classMatrix = zeros(noTestVectors,noGenres);
 
 confusionMatrix = zeros(noGenres, noGenres);
