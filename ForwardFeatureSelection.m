@@ -18,6 +18,7 @@ end
 finalAccuracy = mean(tempAccuracy,1);
 
 plot(finalAccuracy, 'o-');
+set(gca,'FontSize',20)
 xlabel('No. of Features included as per rank 1->10');
 ylabel('Mean Accuracy');
 
